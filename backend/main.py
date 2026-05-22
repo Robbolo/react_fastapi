@@ -5,12 +5,15 @@ from sqlalchemy import func
 from database import SessionLocal
 from models import Transforms
 
+# start fastAPI object
 app = FastAPI()
 
+# test endpoint to confirm api is running
 @app.get("/")
 def root():
     return {"message": "Dashboard API is running"}
 
+# endpoint to get most recent row for each unique name in Transforms table
 @app.get("/transforms")
 def get_transforms():
 
