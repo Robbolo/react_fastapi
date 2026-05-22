@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from database import SessionLocal
 from models import Transforms
@@ -12,20 +13,36 @@ def root():
 
 @app.get("/transforms")
 def get_transforms():
-    # connect to db and query all rows
-    db: Session = SessionLocal()
-    transforms = db.query(Transforms).all()
 
-    # convert to list of dicts for json response
-    results = []
-    for t in transforms:
-        results.append({
-            "id": t.id,
-            "name": t.name,
-            "status": t.status,
-            "start_time": t.start_time.isoformat() if t.start_time else None,
-            "end_time": t.end_time.isoformat() if t.end_time else None
-        })
-    return results
+    # connect to db
+    with SessionLocal() as db:
+
+        # create window subquery to rank rows by start_time for each unique name
+        latest_row = db.query(
+            Transforms,
+            func.row_number()
+                .over(partition_by=Transforms.name, order_by=Transforms.start_time.desc())
+                .label("row_number")
+        ).subquery()
+
+        # send query that filters for most recent row for each unique name
+        query = db.query(latest_row).filter(latest_row.c.row_number == 1)
+
+        # send query and close db connection
+        db_results = query.all()
+
+        # make list of dicts for returning in api response
+        api_results = []
+
+        # iterate through db results and convert to dict format for api response
+        for row in db_results:
+            api_results.append({
+                "id": row.id,
+                "name": row.name,
+                "status": row.status,
+                "start_time": row.start_time.isoformat() if row.start_time else None,
+                "end_time": row.end_time.isoformat() if row.end_time else None
+            })
+        return api_results
 
 
