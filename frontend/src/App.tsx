@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import './App.css'
+import DatasetCard from './DatasetCard';
 
 type DatasetRun = {
   id: number;
@@ -13,35 +13,36 @@ function App() {
   const [data, setData] = useState<DatasetRun[]>([]);
 
   useEffect(() => {
-  fetch("http://localhost:8000/transforms")
-    .then((res) => res.json())
-    .then((data: DatasetRun[]) => setData(data));
-}, []);
+    const fetchData = () => {
+      fetch("http://localhost:8000/transforms")
+        .then((res) => res.json())
+        .then((data: DatasetRun[]) => setData(data));
+    };
 
-return (
-  <div style={{ padding: "20px" }}>
-    <h1>Dataset Dashboard</h1>
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
 
-    {data.map((item) => (
-      <div
-        key={item.id}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "10px",
-          borderBottom: "1px solid #ccc",
-        }}
-      >
-        <span>{item.name}</span>
-        <span>
-  {item.status === "success" && "✅ success"}
-  {item.status === "in_progress" && "🟡 in_progress"}
-  {item.status === "failed" && "❌ failed"}
-</span>
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>Dataset Dashboard</h1>
+
+      <div style={gridStyle}>
+        {data.map((item) => (
+          <DatasetCard key={item.id} data={item} />
+        ))}
       </div>
-    ))}
-  </div>
-);
+    </div>
+  );
 }
+
+const gridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+  gap: "15px",
+  marginTop: "20px",
+};
 
 export default App;
