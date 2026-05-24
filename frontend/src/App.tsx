@@ -34,6 +34,8 @@ function App() {
   const [data, setData] = useState<DatasetRun[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
+  const systemStatus = getSystemStatus(data);
+
   useEffect(() => {
     const fetchData = () => {
       fetch("http://localhost:8000/transforms")
@@ -46,13 +48,15 @@ function App() {
 
     fetchData();
     const interval = setInterval(fetchData, 5000);
-
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div style={{ padding: "20px"}}>
   <h1>Dataset Dashboard</h1>
+      <div style={bannerStyle(systemStatus)}>
+        Shop is {systemStatus}
+      </div>
       <div style={gridStyle}>
         {data.map((item) => (
           <DatasetCard key={item.id} data={item} />
@@ -63,6 +67,55 @@ function App() {
     </div>
     </div>
   );
+}
+
+function bannerStyle(status: string): React.CSSProperties {
+  let background = "#e5e7eb";
+  let color = "#111827";
+
+  if (status === "HEALTHY") {
+    background = "#d1fae5";
+    color = "#065f46";
+  }
+
+  if (status === "LOADING") {
+    background = "#fef3c7";
+    color = "#92400e";
+  }
+
+  if (status === "UNHEALTHY") {
+    background = "#fee2e2";
+    color = "#991b1b";
+  }
+
+  return {
+    padding: "12px 16px",
+    borderRadius: "8px",
+    fontWeight: 600,
+    marginBottom: "15px",
+    background,
+    color,
+  };
+}
+
+function getSystemStatus(data: DatasetRun[]) {
+  const hasFailed = data.some(d => d.status === "failed");
+  const hasInProgress = data.some(d => d.status === "in_progress");
+  const allSuccess = data.every(d => d.status === "success");
+
+  if (hasFailed) {
+    return "UNHEALTHY";
+  }
+
+  if (allSuccess) {
+    return "HEALTHY";
+  }
+
+  if (hasInProgress) {
+    return "LOADING";
+  }
+
+  return "UNKNOWN";
 }
 
 const gridStyle: React.CSSProperties = {
