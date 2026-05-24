@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 type DatasetRun = {
   id: number;
   name: string;
@@ -12,8 +14,10 @@ type Props = {
 
 // describe what each UI card should look like
 function DatasetCard({ data }: Props) {
+    const navigate = useNavigate();
   return (
-    <div style={cardStyle}>
+    <div style={{...cardStyle, cursor: "pointer",}}
+    onClick={() => navigate(`/dataset/${data.name}`)}>
       <h3 style={{ margin: "0 0 10px 0" }}>{data.name}</h3>
 
       <div>{formatStatus(data.status)}</div>
