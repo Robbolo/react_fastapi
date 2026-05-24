@@ -24,21 +24,67 @@ function DetailPage() {
     <div style={{ padding: 20 }}>
       <h1>{name} Run History</h1>
 
-      {runs.map((run) => (
-        <div
-          key={run.id}
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-            padding: "12px",
-            marginBottom: "10px",
-          }}
-        >
-          <div>Status: {run.status}</div>
-          <div>Start: {run.start_time}</div>
-          <div>End: {run.end_time ?? "—"}</div>
-        </div>
-      ))}
+      {/* Header row */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 2fr 2fr 1fr",
+          gap: 12,
+          padding: "8px 12px",
+          borderBottom: "2px solid #e6e6e6",
+          fontWeight: 600,
+        }}
+      >
+        <div>Status</div>
+        <div>Start</div>
+        <div>End</div>
+        <div>Duration</div>
+      </div>
+
+      <div style={{ marginTop: 8 }}>
+        {runs.map((run, idx) => {
+          const startMs = run.start_time ? new Date(run.start_time).getTime() : NaN;
+          const endMs = run.end_time ? new Date(run.end_time).getTime() : NaN;
+
+          const formatDuration = (ms: number) => {
+            if (!isFinite(ms) || ms < 0) return "—";
+            const totalSec = Math.floor(ms / 1000);
+            const hrs = Math.floor(totalSec / 3600);
+            const mins = Math.floor((totalSec % 3600) / 60);
+            const secs = totalSec % 60;
+            if (hrs > 0) return `${hrs}h ${mins}m ${secs}s`;
+            if (mins > 0) return `${mins}m ${secs}s`;
+            return `${secs}s`;
+          };
+
+          const duration = run.start_time
+            ? run.end_time
+              ? formatDuration(endMs - startMs)
+              : `in progress (${formatDuration(Date.now() - startMs)})`
+            : "—";
+
+          return (
+            <div
+              key={run.id}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 2fr 2fr 1fr",
+                gap: 12,
+                padding: "12px",
+                borderRadius: 6,
+                background: idx % 2 === 0 ? "#ffffff" : "#fbfdff",
+                marginBottom: 8,
+                alignItems: "center",
+              }}
+            >
+              <div style={{ textTransform: "capitalize" }}>{run.status}</div>
+              <div>{run.start_time ? new Date(run.start_time).toLocaleString() : "—"}</div>
+              <div>{run.end_time ? new Date(run.end_time).toLocaleString() : "—"}</div>
+              <div>{duration}</div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
