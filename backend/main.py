@@ -59,20 +59,20 @@ def get_transforms():
         return api_results
 
 # endpoint to get history of all cookie runs from transforms table
-@app.get("/transforms/cookies")
-def get_cookies():
+@app.get("/transforms/{name}")
+def get_transform_history(name: str):
 
     # connect to db
     with SessionLocal() as db:
 
         # create window subquery to rank rows by start_time for each unique name
-        cookie_runs = db.query(Transforms).filter(Transforms.name == "cookies").order_by(Transforms.start_time.desc()).all()
+        full_runs = db.query(Transforms).filter(Transforms.name == name).order_by(Transforms.start_time.desc()).all()
 
         # make list of dicts for returning in api response
         api_results = []
 
         # iterate through db results and convert to dict format for api response
-        for row in cookie_runs:
+        for row in full_runs:
             api_results.append({
                 "id": row.id,
                 "name": row.name,
