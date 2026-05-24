@@ -9,14 +9,39 @@ type DatasetRun = {
   end_time: string | null;
 };
 
+function formatTimeAgo(date: Date | null) {
+  if (!date) return "never";
+
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+
+  if (diffSeconds < 60) {
+    return `${diffSeconds} seconds ago`;
+  }
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes} minutes ago`;
+  }
+
+  return `${diffHours} hours ago`;
+}
+
 function App() {
   const [data, setData] = useState<DatasetRun[]>([]);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchData = () => {
       fetch("http://localhost:8000/transforms")
         .then((res) => res.json())
-        .then((data: DatasetRun[]) => setData(data));
+        .then((data: DatasetRun[]) => {
+          setData(data);
+          setLastUpdated(new Date());
+        });
     };
 
     fetchData();
@@ -26,14 +51,16 @@ function App() {
   }, []);
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Dataset Dashboard</h1>
-
+    <div style={{ padding: "20px"}}>
+  <h1>Dataset Dashboard</h1>
       <div style={gridStyle}>
         {data.map((item) => (
           <DatasetCard key={item.id} data={item} />
         ))}
       </div>
+      <div style={tagStyle}>
+    last updated {formatTimeAgo(lastUpdated)}
+    </div>
     </div>
   );
 }
@@ -45,4 +72,11 @@ const gridStyle: React.CSSProperties = {
   marginTop: "20px",
 };
 
+const tagStyle: React.CSSProperties = {
+  fontSize: "12px",
+  padding: "6px 10px",
+  borderRadius: "999px",
+  backgroundColor: "#f3f4f6",
+  color: "#374151",
+};
 export default App;
