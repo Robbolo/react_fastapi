@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
@@ -7,6 +8,15 @@ from models import Transforms
 
 # start fastAPI object
 app = FastAPI()
+
+# allow CORS for react frontend running on localhost:5173 to access API endpoint
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # test endpoint to confirm api is running
 @app.get("/")
