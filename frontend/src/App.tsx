@@ -74,18 +74,18 @@ function bannerStyle(status: string): React.CSSProperties {
   let color = "#111827";
 
   if (status === "HEALTHY") {
-    background = "#d1fae5";
-    color = "#065f46";
+    background = "#0c964e";
+    color = "#ffffff";
   }
 
   if (status === "LOADING") {
-    background = "#fef3c7";
-    color = "#92400e";
+    background = "#e66c1a";
+    color = "#ffffff";
   }
 
   if (status === "UNHEALTHY") {
-    background = "#fee2e2";
-    color = "#991b1b";
+    background = "#e02020";
+    color = "#ffffff";
   }
 
   return {
